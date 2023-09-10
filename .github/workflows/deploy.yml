@@ -29,7 +29,7 @@ jobs:
       run: |
         scp \
           -o StrictHostKeychecking=no \
-          -o UserKnownHostsFile=/dev/null
+          -o UserKnownHostsFile=/dev/null \
           deploy.sh \
           ${{ secrets.webserver_user }}@${{ secrets.webserver_ip }}:/home/${{ secrets.webserver_user }}
     - name: Make sure the script is executable
