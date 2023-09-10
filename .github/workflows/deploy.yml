@@ -1,0 +1,48 @@
+name: "Deploy to the webserver"
+
+on:
+  push:
+    branches: [ "main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: webfactory/ssh-agent@v0.8.0
+      with:
+        ssh-private-key: ${{ secrets.private_key }}
+    - name: Create the script
+      run: |
+        cat <<EOF > deploy.sh
+        #!/usr/bin/env bash
+        rm -rf ~/tmp
+        git clone --depth=1 https://github.com/danielalazzara/interview_september_2023.git ~/tmp
+        rsync -a --delete ~/tmp/source/ /var/www/daniela/html/
+        EOF
+    - name: Copy the script to the webserver
+      run: |
+        scp \
+          -o StrictHostKeychecking=no \
+          -o UserKnownHostsFile=/dev/null
+          deploy.sh \
+          ${{ secrets.webserver_user }}@${{ secrets.webserver_ip }}:/home/${{ secrets.webserver_user }}
+    - name: Make sure the script is executable
+      run: |
+        ssh \
+          -o StrictHostKeychecking=no \
+          -o UserKnownHostsFile=/dev/null \
+          ${{ secrets.webserver_user }}@${{ secrets.webserver_ip }} \
+          "chmod +x deploy.sh"
+    - name: Execute the script
+      run: |
+        ssh \
+          -o StrictHostKeychecking=no \
+          -o UserKnownHostsFile=/dev/null \
+          ${{ secrets.webserver_user }}@${{ secrets.webserver_ip }} \
+          "sh -c deploy.sh"
