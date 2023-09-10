@@ -45,4 +45,4 @@ jobs:
           -o StrictHostKeychecking=no \
           -o UserKnownHostsFile=/dev/null \
           ${{ secrets.webserver_user }}@${{ secrets.webserver_ip }} \
-          "sh -c deploy.sh"
+          "sh -c ./deploy.sh"
